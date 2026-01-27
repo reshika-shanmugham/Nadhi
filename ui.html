@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HSN Data Processor</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body {
+            background: #0a0a1a;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            text-align: center;
+        }
+        h1 {
+            color: #00d4ff;
+            font-size: 36px;
+        }
+        #fileInput {
+            display: none;
+        }
+        label {
+            background: #00d4ff;
+            color: white;
+            padding: 15px 60px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-block;
+        }
+        label:hover {
+            background: #5b8bf8;
+        }
+        #status {
+            margin: 20px;
+            padding: 20px;
+            background: #1a1a2e;
+            border-radius: 10px;
+        }
+        #download {
+            display: none;
+            background: darkcyan;
+            color: black;
+            padding: 10px 40px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HSN Data Processor</h1>
+        <p>Professional file processing interface</p>
+        
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
+        <label for="fileInput">Select File & Process</label>
+        
+        <div id="status">Ready to process files...</div>
+        <a id="download" download>Download Processed File</a>
+    </div>
+
+    <script>
+        // EMBEDDED MASTER.PY LOGIC - Pure JavaScript [file:5]
+        const HSNDATA = {
+            'teether': 95030010.0,
+            'accessories': 62171010.0,
+            'doll': 95030010.0,
+            'outfits': 62092000.0
+        };
+
+        function get_hsn(handle) {
+            if (!handle) return HSNDATA.outfits;
+            const handle_lower = handle.toString().toLowerCase();
+            if (handle_lower.includes('teether')) return HSNDATA.teether;
+            if (handle_lower.includes('doll') || handle_lower.includes('toy')) return HSNDATA.doll;
+            if (handle_lower.includes('bow') || handle_lower.includes('headband') || 
+                handle_lower.includes('clip') || handle_lower.includes('accessories')) {
+                return HSNDATA.accessories;
+            }
+            return HSNDATA.outfits;
+        }
+
+        function get_gst(price) {
+            try {
+                return parseFloat(price) > 2500 ? 18 : 5;
+            } catch {
+                return 5;
+            }
+        }
+
+        function process_data(rows) {
+            const required_cols = ['Handle', 'Title', 'Variant SKU', 'Option1 Value', 'Variant Price'];
+            let df = rows.map(row => {
+                const newRow = {};
+                required_cols.forEach(col => {
+                    newRow[col] = row[col] || '';
+                });
+                return newRow;
+            });
+
+            // Forward fill Title
+            for (let i = 1; i < df.length; i++) {
+                if (!df[i].Title && df[i-1].Title) {
+                    df[i].Title = df[i-1].Title;
+                }
+            }
+
+            // Filter rows with Handle
+            df = df.filter(row => row.Handle);
+
+            // Add HSN Code & GST Rate
+            df.forEach(row => {
+                row['HSN Code'] = get_hsn(row.Handle);
+                row['GST Rate'] = get_gst(row['Variant Price']);
+            });
+
+            const final_order = ['Handle', 'Title', 'HSN Code', 'Variant SKU', 'Option1 Value', 'Variant Price', 'GST Rate'];
+            return df.map(row => {
+                const ordered = {};
+                final_order.forEach(col => {
+                    ordered[col] = row[col] || '';
+                });
+                return ordered;
+            });
+        }
+
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            const status = document.getElementById('status');
+            
+            if (!file) return;
+            
+            status.textContent = `Processing ${file.name}...`;
+            status.style.background = '#1a1a2e';
+            status.style.color = '#00d4ff';
+
+            try {
+                let rows = [];
+                
+                if (file.name.toLowerCase().endsWith('.csv')) {
+                    // Parse CSV
+                    Papa.parse(file, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            rows = results.data;
+                            processFileComplete(rows);
+                        },
+                        error: function(err) {
+                            throw new Error('CSV parse error: ' + err);
+                        }
+                    });
+                } else {
+                    // Parse XLSX
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                        
+                        if (json.length > 0) {
+                            const headers = json[0];
+                            rows = json.slice(1).map(row => {
+                                const obj = {};
+                                headers.forEach((header, i) => {
+                                    obj[header] = row[i];
+                                });
+                                return obj;
+                            });
+                        }
+                        processFileComplete(rows);
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+
+                async function processFileComplete(rows) {
+                    if (rows.length === 0) {
+                        throw new Error('No data found in file');
+                    }
+
+                    const processedData = process_data(rows);
+                    
+                    // Create Excel file
+                    const ws = XLSX.utils.json_to_sheet(processedData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, 'Data');
+                    
+                    // Auto-size columns
+                    const colWidths = processedData[0] ? Object.keys(processedData[0]).map(col => 
+                        Math.max(col.length, ...processedData.map(row => String(row[col] || '').length)) + 2
+                    ) : [];
+                    ws['!cols'] = colWidths.map(w => ({ wch: w }));
+
+                    const processedBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                    const blob = new Blob([processedBuffer], {
+                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    });
+
+                    // Trigger download
+                    const url = URL.createObjectURL(blob);
+                    const download = document.getElementById('download');
+                    download.href = url;
+                    download.download = file.name.replace(/\.[^/.]+$/, '_processed.xlsx');
+                    download.style.display = 'inline-block';
+                    
+                    status.textContent = `Complete! ${processedData.length} rows processed.`;
+                    status.style.color = '#00ff7f';
+                }
+
+            } catch (err) {
+                status.textContent = 'Error: ' + err.message;
+                status.style.color = '#ff6b6b';
+            }
+        });
+    </script>
+</body>
+</html>
