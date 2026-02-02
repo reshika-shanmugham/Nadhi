@@ -3,426 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PURECLOTH FILE PROCESSOR</title>
+    <title>MASTER FILE PROCESSOR</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Enfocado', sans-serif; background: linear-gradient(135deg, #FEF5E7 0%, #F0E8D2 50%, #E8DAB6 100%); min-height: 100vh; padding: 1rem; }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #FEF5E7 0%, #F0E8D2 50%, #E8DAB6 100%);
-            min-height: 100vh;
-            padding: 1rem;
-        }
-
         .main-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 1.5rem;
-            min-height: calc(100vh - 2rem);
+            max-width: 1400px; margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: 220px 1fr 380px; 
+            gap: 1.5rem; 
+            min-height: calc(100vh - 2rem); 
             align-content: start;
         }
-
+        
         .panel {
-            background: #FDFAF6;
-            border-radius: 16px;
-            box-shadow: 
-                0 20px 40px rgba(139,115,85,0.12),
-                0 8px 20px rgba(0,0,0,0.04);
-            border: 1px solid rgba(212,184,150,0.3);
-            overflow: hidden;
-            position: relative;
+            background: #FDFAF6; border-radius: 16px; 
+            box-shadow: 0 20px 40px rgba(139,115,85,0.12), 0 8px 20px rgba(0,0,0,0.04); 
+            border: 1px solid rgba(212,184,150,0.3); 
+            overflow: hidden; position: relative;
         }
-
-        .panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(139,115,85,0.4), transparent);
+        .panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(139,115,85,0.4), transparent); }
+        
+        .header-panel { 
+            grid-column: 1 / -1; text-align: center; padding: 2rem 1.5rem; 
+            background: linear-gradient(135deg, #987468e2 0%, #ab9082 50%, #987468e2 100%); 
+            color: #FDFAF6; position: relative; overflow: hidden; margin-bottom: 1rem; 
         }
-
-        .header-panel {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 2rem 1.5rem;
-            background: linear-gradient(135deg, #8B7355 0%, #A89C7E 50%, #D2B48C 100%);
-            color: #FDFAF6;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 1rem;
+        .header-panel::after { 
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            background: radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(255,255,255,0.05) 0%, transparent 50%); 
         }
+        .header-panel { position: relative; z-index: 0.5; }
+        .header-panel h1 { font-family: 'Enfocado', sans-serif; font-size: 2.2rem; font-weight: 700; margin-bottom: 0.2rem; letter-spacing: -0.02em; text-shadow: 0 3px 8px rgba(0,0,0,0.2); }
+        .header-panel p { font-size: 1rem; opacity: 0.95; font-weight: 400; text-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        /* Left Buttons Panel */
+        /* Left Buttons Panel */
+.buttons-panel { 
+    padding: 1.5rem 1rem; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 0.75rem; 
+    height: 100%; 
+    max-height: 100vh; 
+    overflow-y: auto; 
+    background: linear-gradient(105deg, #dcc0ad, rgba(248,250,246,0.9));
+    /* ✅ CENTER ALIGN BUTTONS */
+    align-items: center;
+}
+        .functions-grid { display: flex; flex-direction: column; gap: 0.75rem; }
 
-        .header-panel::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 70%, rgba(255,255,255,0.05) 0%, transparent 50%);
+.function-btn { 
+    height: 45px; 
+    border: 2px dashed rgba(139,115,85,0.4); 
+    background: #964F33; 
+    border-radius: 10px; 
+    font-size: 1.0rem; 
+    font-weight: 400;
+    font-family: 'Enfocado';  /* Fixed: was 'Enfocado' */
+    color: rgba(248,245,231,0.95); 
+    cursor: pointer; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    text-align: center; 
+    position: relative; 
+    backdrop-filter: blur(6px); 
+    /* ✅ FIXED WIDTH - REMOVED hardcoded 200px */
+    width: 180px;  /* Consistent width for perfect alignment */
+    text-align: center;
+}
+        .function-btn:hover:not(:disabled) { border-color: #8B7355; background: #ac6b52; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139,115,85,0.18); }
+        .function-btn:active { transform: translateY(0); }
+        .function-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; border-style: solid; background: #ac6b52; }
+        /* Center Panel: Upload + Preview */
+        .center-panel { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; height: 100%; max-height: 100vh; overflow: hidden; background: linear-gradient(1000deg, #dcc0ad, rgba(248,250,246,0.9)); }
+        .upload-section { 
+            flex: 0 0 100px; border: 2px dashed #D2B48C; border-radius: 12px; padding: 1rem; text-align: center; 
+            background: linear-gradient(135deg, rgba(245,245,220,0.6), rgba(248,250,246,0.8)); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            cursor: pointer; position: relative; backdrop-filter: blur(8px); 
         }
-
-        .header-panel > * {
-            position: relative;
-            z-index: 1;
+        .upload-section:hover { border-color: #8B7355; background: linear-gradient(135deg, rgba(235, 196, 175, 0.763), rgba(248,250,246,0.9)); transform: translateY(-2px); box-shadow: 0 12px 25px rgba(139,115,85,0.15); }
+        .upload-section.dragover { border-color: #6B5A3E; background: linear-gradient(135deg, rgba(139,115,85,0.3), rgba(210,180,140,0.6)); transform: translateY(-1px) scale(1.01); }
+        .upload-section input[type="file"] { display: none; }
+        .upload-text { font-size: 1.5rem; font-weight: 1000; color: #6B5A3E; margin-bottom: 0.10rem; letter-spacing: -0.01em;font-family:'Enfocado' }
+        .upload-subtext { color: #8B7355; font-size: 0.9rem; font-weight: 400; }
+        .file-status { margin-top: 0.5rem; padding: 0.2rem; background: linear-gradient(135deg, rgba(139,115,85,0.1), rgba(210,180,140,0.1)); border-radius: 8px; border-left: 3px solid #8B7355; font-weight: 500; color: #6B5A3E; backdrop-filter: blur(6px); font-size: 0.85rem; }
+        
+        .preview-container { 
+            flex: 1; background: rgba(253, 250, 246, 0.95); border-radius: 12px; border: 1px solid rgba(210, 180, 140, 0.3); 
+            overflow: auto; max-height: 180rem; backdrop-filter: blur(8px); 
         }
-
-        .header-panel h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-            text-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        .preview-title { font-size: 0.95rem; font-weight: 600; color: #6B5A3E; padding: 1rem 1rem 0.75rem 1rem; letter-spacing: -0.01em; }
+        .preview-table-wrapper { width: 100%; overflow-x: auto; }
+        .preview-table { 
+            width: 100%; border-collapse: collapse; table-layout: auto !important; font-family: 'Enfocado', sans-serif; 
+            font-size: 0.75rem; background: #FDFAF6; min-width: max-content; 
         }
-
-        .header-panel p {
-            font-size: 1rem;
-            opacity: 0.95;
-            font-weight: 400;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        .preview-table th, .preview-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid rgba(210, 180, 140, 0.2); border-right: 1px solid rgba(210, 180, 140, 0.1); white-space: nowrap; overflow: visible; }
+        .preview-table th { background: linear-gradient(135deg, #F8F1E9, #F0E8D2); font-weight: 600; color: #6B5A3E; position: sticky; top: 0; z-index: 10; text-align: left; }
+        .preview-table td:last-child, .preview-table th:last-child { border-right: none; }
+        .preview-table tr:hover { background: rgba(248, 245, 231, 0.6); }
+        
+        /* Right Output Panel */
+        .action-output-panel { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; height: 100%; max-height: 100vh;background: linear-gradient(105deg, #dcc0ad, rgba(248,250,246,0.9)); }
+        .output-section { flex: 0 0 auto; }
+        .output-header { margin-bottom: 1rem; }
+        .output-title { font-size: 1.5rem; font-weight: 1000; color: #6B5A3E; letter-spacing: -0.01em; font-family: 'Enfocado';}
+        .output-area { 
+            background: linear-gradient(135deg, rgba(248,245,231,0.7), rgba(253,250,246,0.9)); border: 1px solid rgba(210,180,140,0.4); 
+            border-radius: 12px; padding: 1.2rem; height: 160px; min-height: 160px; font-family: 'Enfocado';
+            font-size: 1.0rem; color: #5A4A3E; white-space: pre-wrap; overflow-y: auto; line-height: 1.5; 
+            backdrop-filter: blur(10px); box-shadow: inset 0 1px 6px rgba(0,0,0,0.02); 
         }
-
-        .action-output-panel {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            height: fit-content;
-            max-height: 100vh;
+        .action-section { flex: 0 0 auto; }
+        .action-title { font-size: 1rem; color: #6B5A3E; margin-bottom: 1rem; font-weight: 600; letter-spacing: -0.01em; }
+        .btn { 
+            height: 50px; border: none; border-radius: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.6, 0, 0.2, 1); text-transform: uppercase; letter-spacing: 0.5px; 
+            font-family: 'Enfocado', sans-serif; position: relative; overflow: hidden; backdrop-filter: blur(10px); 
+            width: 100%; margin-bottom: 0.75rem; 
         }
-
-        .output-section {
-            flex: 0 0 auto;
+        .btn-primary { 
+            background: linear-gradient(135deg, #6B8A2F, #8B9A46, #9AAB5E); color: #FDFAF6; font-family: 'Enfocado'; font-weight: 400; font-size:1.3rem;
+            box-shadow: 0 8px 20px rgba(107,138,47,0.25); border: 1px solid rgba(255,255,255,0.3); text-shadow: 0 1px 3px rgba(0,0,0,0.1); 
         }
-
-        .output-header {
-            margin-bottom: 1rem;
+        .btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(107,138,47,0.35); }
+        .btn-download { 
+            background: linear-gradient(135deg, #D4AF37, #FAD02C, #F4D03F); color: #6B5A3E; 
+            box-shadow: 0 8px 20px rgba(212,175,55,0.35); border: 1px solid rgba(255,255,255,0.4); font-family: 'Enfocado'; font-weight: 400; font-size:1.3rem; 
+            text-shadow: none; padding-top: 15px; text-decoration: none; text-align: center; display: block; 
         }
-
-        .output-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #6B5A3E;
-            letter-spacing: -0.01em;
+        .btn-download:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(212,175,55,0.45); }
+        .btn-secondary { 
+            background: linear-gradient(135deg, #F8F1E9, #F0E8D2, #E8DAB6); color: #6B5A3E; 
+            border: 2px solid rgba(139,115,85,0.3); box-shadow: 0 6px 15px rgba(139,115,85,0.12); font-family: 'Enfocado'; font-weight: 400; font-size:1.3rem; 
         }
-
-        .output-area {
-            background: linear-gradient(135deg, rgba(248,245,231,0.7), rgba(253,250,246,0.9));
-            border: 1px solid rgba(210,180,140,0.4);
-            border-radius: 12px;
-            padding: 1.2rem;
-            height: 160px;
-            min-height: 160px;
-            font-family: 'Fira Code', 'SF Mono', monospace;
-            font-size: 0.82rem;
-            color: #5A4A3E;
-            white-space: pre-wrap;
-            overflow-y: auto;
-            line-height: 1.5;
-            backdrop-filter: blur(10px);
-            box-shadow: inset 0 1px 6px rgba(0,0,0,0.02);
+        .btn-secondary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(139,115,85,0.2); border-color: #8B7355; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        
+        @media (max-width: 1024px) { 
+            .main-container { grid-template-columns: 1fr; gap: 1rem; padding: 0.5rem; } 
+            .buttons-panel, .center-panel, .action-output-panel { padding:center 1rem; } 
         }
-
-        .action-section {
-            flex: 0 0 auto;
-        }
-
-        .action-title {
-            font-size: 1rem;
-            color: #6B5A3E;
-            margin-bottom: 1rem;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-        }
-
-        .btn {
-            height: 50px;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-family: 'Inter', sans-serif;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            width: 100%;
-            margin-bottom: 0.75rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #6B8A2F, #8B9A46, #9AAB5E);
-            color: #FDFAF6;
-            box-shadow: 0 8px 20px rgba(107,138,47,0.25);
-            border: 1px solid rgba(255,255,255,0.3);
-            text-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(107,138,47,0.35);
-        }
-
-        .btn-download {
-            background: linear-gradient(135deg, #D4AF37, #FAD02C, #F4D03F);
-            color: #6B5A3E;
-            box-shadow: 0 8px 20px rgba(212,175,55,0.35);
-            border: 1px solid rgba(255,255,255,0.4);
-            font-weight: 700;
-            text-shadow: none;
-            padding-top: 15px;
-        }
-
-        .btn-download:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(212,175,55,0.45);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #F8F1E9, #F0E8D2, #E8DAB6);
-            color: #6B5A3E;
-            border: 2px solid rgba(139,115,85,0.3);
-            box-shadow: 0 6px 15px rgba(139,115,85,0.12);
-            font-weight: 600;
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(139,115,85,0.2);
-            border-color: #8B7355;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .main-panel {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            height: fit-content;
-            max-height: 100vh;
-        }
-
-        .upload-section {
-            flex: 0 0 auto;
-            border: 2px dashed #D2B48C;
-            border-radius: 12px;
-            padding: 2rem 1.5rem;
-            text-align: center;
-            background: linear-gradient(135deg, rgba(245,245,220,0.6), rgba(248,250,246,0.8));
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            backdrop-filter: blur(8px);
-        }
-
-        .upload-section:hover {
-            border-color: #8B7355;
-            background: linear-gradient(135deg, rgba(210,180,140,0.7), rgba(248,250,246,0.9));
-            transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(139,115,85,0.15);
-        }
-
-        .upload-section.dragover {
-            border-color: #6B5A3E;
-            background: linear-gradient(135deg, rgba(139,115,85,0.3), rgba(210,180,140,0.6));
-            transform: translateY(-1px) scale(1.01);
-        }
-
-        .upload-section input[type="file"] {
-            display: none;
-        }
-
-        .upload-text {
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: #6B5A3E;
-            margin-bottom: 0.25rem;
-            letter-spacing: -0.01em;
-        }
-
-        .upload-subtext {
-            color: #8B7355;
-            font-size: 0.9rem;
-            font-weight: 400;
-        }
-
-        .file-status {
-            margin-top: 1rem;
-            padding: 0.8rem;
-            background: linear-gradient(135deg, rgba(139,115,85,0.1), rgba(210,180,140,0.1));
-            border-radius: 8px;
-            border-left: 3px solid #8B7355;
-            font-weight: 500;
-            color: #6B5A3E;
-            backdrop-filter: blur(6px);
-            font-size: 0.85rem;
-        }
-
-        .functions-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.8rem;
-        }
-
-        .function-btn {
-            height: 65px;
-            border: 2px dashed rgba(139,115,85,0.4);
-            background: rgba(253,250,246,0.8);
-            border-radius: 10px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: #6B5A3E;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            position: relative;
-            backdrop-filter: blur(6px);
-            font-family: 'Inter', sans-serif;
-        }
-
-        .function-btn:hover:not(:disabled) {
-            border-color: #8B7355;
-            background: rgba(248,245,231,0.95);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(139,115,85,0.18);
-        }
-
-        .function-btn:active {
-            transform: translateY(0);
-        }
-
-        .function-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-            border-style: solid;
-            background: rgba(253,250,246,0.5);
-        }
-
-        /* FIXED: Perfect Auto-Sizing Table */
-        .preview-container {
-            margin-top: 1rem;
-            background: rgba(253, 250, 246, 0.95);
-            border-radius: 12px;
-            border: 1px solid rgba(210, 180, 140, 0.3);
-            overflow: auto;
-            max-height: 300px;
-            backdrop-filter: blur(8px);
-        }
-
-        .preview-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #6B5A3E;
-            padding: 1rem 1rem 0.75rem 1rem;
-            letter-spacing: -0.01em;
-        }
-
-        .preview-table-wrapper {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        .preview-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: auto !important;
-            font-family: 'Fira Code', 'SF Mono', monospace;
-            font-size: 0.75rem;
-            background: #FDFAF6;
-            min-width: max-content; /* Ensures table can expand */
-        }
-
-        .preview-table th,
-        .preview-table td {
-            padding: 0.4rem 0.6rem;
-            border-bottom: 1px solid rgba(210, 180, 140, 0.2);
-            border-right: 1px solid rgba(210, 180, 140, 0.1);
-            white-space: nowrap;
-            overflow: visible; /* Changed from hidden */
-            text-overflow: clip;
-            /* NO max-width - let content dictate width */
-        }
-
-        .preview-table th {
-            background: linear-gradient(135deg, #F8F1E9, #F0E8D2);
-            font-weight: 600;
-            color: #6B5A3E;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            text-align: left;
-        }
-
-        .preview-table td:last-child,
-        .preview-table th:last-child {
-            border-right: none;
-        }
-
-        .preview-table tr:hover {
-            background: rgba(248, 245, 231, 0.6);
-        }
-
-        @media (max-width: 1024px) {
-            .main-container {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-                padding: 0.5rem;
-            }
-            
-            .main-panel, .action-output-panel {
-                padding: 1.25rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .functions-grid {
-                grid-template-columns: 1fr;
-                gap: 0.75rem;
-            }
-            
-            .header-panel h1 {
-                font-size: 1.8rem;
-            }
-            
-            .upload-section {
-                padding: 1.5rem 1rem;
-            }
-
-            .preview-table {
-                font-size: 0.7rem;
-            }
-
-            .preview-table th,
-            .preview-table td {
-                padding: 0.3rem 0.4rem;
-            }
+        @media (max-width: 768px) { 
+            .functions-grid { gap:center 0.5rem; } 
+            .header-panel h1 { font-size: 1.8rem; } 
+            .upload-section { padding: 1.5rem 1rem; flex: 0 0 auto; } 
+            .preview-table { font-size: 0.7rem; } 
+            .preview-table th, .preview-table td { padding: 0.3rem 0.4rem; } 
         }
     </style>
 </head>
@@ -431,22 +165,35 @@
         <!-- Header Panel -->
         <div class="panel header-panel">
             <div>
-                <h1>PURECLOTH TEMPLATE PROCESSOR</h1>
+                <h1 style="font-family: 'Enfocado'; font-weight: 400; font-size:2.5rem;">PURECLOTH TEMPLATE PROCESSOR</h1>
             </div>
         </div>
-
-        <!-- Main Panel: Upload + Functions (LEFT - now larger area) -->
-        <div class="panel main-panel">
+        
+        <!-- Left Buttons Panel -->
+        <div class="panel buttons-panel">
+            <div class="functions-grid" id="functionsGrid">
+                <button class="function-btn" onclick="addTitleFill()">Title Forward Fill</button>
+                <button class="function-btn" onclick="addHSN()" id="hsnBtn">Add HSN Code</button>
+                <button class="function-btn" onclick="addBarcodeColumn()" id="barcodeBtn" disabled>Add Bar Code</button>
+                <button class="function-btn" onclick="addGST()" id="gstBtn">Add GST Rate</button>
+                <button class="function-btn" onclick="deleteHandle()" id="deleteHandleBtn" disabled>Delete Handle</button>
+                <button class="function-btn" onclick="addQuantity()">Add Quantity</button>
+                <button class="function-btn" onclick="addSalesColumns()">Add Sales</button>
+                <button class="function-btn" onclick="reorderColumns()">Final Reorder</button>
+            </div>
+        </div>
+        
+        <!-- Center Panel: Upload + Preview -->
+        <div class="panel center-panel">
             <div class="upload-section" id="uploadSection">
                 <div class="upload-text">Drag your file here</div>
                 <div class="upload-subtext">or click to browse CSV/Excel files</div>
                 <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
                 <div id="fileStatus" class="file-status" style="display: none;"></div>
             </div>
-
-            <!-- FIXED Preview Table -->
+            <!-- Preview Table -->
             <div class="preview-container" id="previewContainer" style="display: none;">
-                <div class="preview-title">Live Data Preview</div>
+                <div class="preview-title" style="font-family: 'Enfocado'; font-weight: 400; font-size:1.3rem;">Live Data Preview</div>
                 <div class="preview-table-wrapper">
                     <table class="preview-table" id="previewTable">
                         <thead></thead>
@@ -454,34 +201,22 @@
                     </table>
                 </div>
             </div>
-
-            <div class="functions-grid" id="functionsGrid">
-                <button class="function-btn" onclick="addTitleFill()">Title Forward Fill</button>
-                <button class="function-btn" onclick="addHSN()" id="hsnBtn">Add HSN Code</button>
-                <button class="function-btn" onclick="addBarcodeColumn()" id="barcodeBtn" disabled>Add Bar Code Col</button>
-                <button class="function-btn" onclick="addGST()" id="gstBtn">Add GST Rate Cols</button>
-                <button class="function-btn" onclick="deleteHandle()" id="deleteHandleBtn" disabled>Delete Handle Col</button>
-                <button class="function-btn" onclick="addQuantity()">Add Quantity Col</button>
-                <button class="function-btn" onclick="addSalesColumns()">Add Sales Cols</button>
-                <button class="function-btn" onclick="reorderColumns()">Final Reorder</button>
-            </div>
         </div>
-
-        <!-- Action + Output Panel (RIGHT - now smaller & compact) -->
+        
+        <!-- Right Output Panel -->
         <div class="panel action-output-panel">
-            <!-- Output Console (smaller) -->
+            <!-- Output Console -->
             <div class="output-section">
                 <div class="output-header">
                     <div class="output-title">Output Console</div>
                 </div>
                 <div id="outputArea" class="output-area">Waiting for file upload...</div>
             </div>
-
             <!-- Process Buttons -->
             <div class="action-section">
-                <div class="action-title">Process Selected Operations</div>
+                <div class="action-title" style="font-family: 'Enfocado'; font-weight: 500; font-size:1.3rem;">Process Selected Operations</div>
                 <button class="btn btn-primary" onclick="processCompleteFile()" id="processBtn" disabled>Process File</button>
-                <a class="btn btn-download" id="downloadBtn" style="display: none; text-decoration: none; text-align: center;">Download Result</a>
+                <button class="btn btn-download" id="downloadBtn" style="display: none;" onclick="downloadProcessedFile()">Download Result</button>
                 <button class="btn btn-secondary" onclick="resetData()" id="resetBtn" disabled>Reset All</button>
             </div>
         </div>
@@ -493,12 +228,11 @@
         let hsnAdded = false;
         let gstAdded = false;
         let processedData = null;
-
-        const HSNDATA = {
-            'teether': 95030010.0,
-            'accessories': 62171010.0,
-            'doll': 95030010.0,
-            'outfits': 62092000.0
+        const HSN_DATA = {
+            'teether': '95030010.0',
+            'accessories': '62171010.0',
+            'doll': '95030010.0',
+            'outfits': '62092000.0'
         };
 
         // Event listeners
@@ -511,18 +245,16 @@
             e.preventDefault();
             uploadSection.classList.add('dragover');
         });
-        uploadSection.addEventListener('dragleave', () => {
-            uploadSection.classList.remove('dragover');
-        });
+        uploadSection.addEventListener('dragleave', () => uploadSection.classList.remove('dragover'));
         uploadSection.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadSection.classList.remove('dragover');
             const files = e.dataTransfer.files;
-            if (files.length) handleFile({target: {files: [files[0]]}});
+            if (files.length) handleFile({ target: { files: [files[0]] } });
         });
         fileInput.addEventListener('change', handleFile);
 
-        // FIXED: Perfect auto-sizing preview
+        // FIXED Perfect auto-sizing preview
         function updatePreviewTable() {
             const previewContainer = document.getElementById('previewContainer');
             const previewTable = document.getElementById('previewTable');
@@ -542,7 +274,7 @@
             const headerRow = document.createElement('tr');
             currentData[0].forEach(header => {
                 const th = document.createElement('th');
-                th.textContent = header || '';
+                th.textContent = header;
                 headerRow.appendChild(th);
             });
             thead.appendChild(headerRow);
@@ -553,7 +285,7 @@
                 const row = document.createElement('tr');
                 currentData[i].forEach(cell => {
                     const td = document.createElement('td');
-                    td.textContent = cell || '';
+                    td.textContent = cell;
                     row.appendChild(td);
                 });
                 tbody.appendChild(row);
@@ -561,9 +293,7 @@
 
             // Force table to recalculate column widths
             previewTable.style.width = 'auto';
-            setTimeout(() => {
-                previewTable.style.width = '100%';
-            }, 10);
+            setTimeout(() => { previewTable.style.width = '100%'; }, 10);
         }
 
         async function handleFile(e) {
@@ -573,13 +303,13 @@
             currentFileName = file.name;
             document.getElementById('fileStatus').style.display = 'block';
             document.getElementById('fileStatus').textContent = `Uploaded: ${file.name}`;
-            
+
             try {
-                if (file.name.match(/\.(csv)$/i)) {
+                if (file.name.match(/\.csv$/i)) {
                     Papa.parse(file, {
                         complete: (results) => {
                             currentData = results.data;
-                            updateOutput(`✅ CSV loaded!\n📊 Rows: ${currentData.length}`);
+                            updateOutput(`CSV loaded! Rows: ${currentData.length}`);
                             updatePreviewTable();
                             enableButtons();
                             resetFunctionStates();
@@ -587,36 +317,35 @@
                     });
                 } else {
                     const data = await file.arrayBuffer();
-                    const workbook = XLSX.read(data, {type: 'array'});
+                    const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    currentData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
-                    updateOutput(`✅ File loaded!\n📊 Rows: ${currentData.length}`);
+                    currentData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    updateOutput(`File loaded! Rows: ${currentData.length}`);
                     updatePreviewTable();
                     enableButtons();
                     resetFunctionStates();
                 }
             } catch (err) {
-                updateOutput(`❌ Error: ${err.message}`);
+                updateOutput(`Error: ${err.message}`);
             }
         }
 
         function enableButtons() {
-            document.querySelectorAll('#processBtn, #resetBtn, .function-btn:not(#deleteHandleBtn)').forEach(btn => {
-                btn.disabled = false;
-            });
+            document.querySelectorAll('#processBtn, #resetBtn, .function-btn:not(#deleteHandleBtn)').forEach(btn => btn.disabled = false);
         }
 
         function updateBarcodeState() {
-    const barcodeBtn = document.getElementById('barcodeBtn');
-    barcodeBtn.disabled = !hsnAdded;
-}
+            const barcodeBtn = document.getElementById('barcodeBtn');
+            barcodeBtn.disabled = !hsnAdded;
+        }
 
-function resetFunctionStates() {
-    hsnAdded = false;
-    gstAdded = false;
-    deleteHandleBtn.disabled = true;
-    updateBarcodeState();  // Disable barcode button
-}
+        function resetFunctionStates() {
+            hsnAdded = false;
+            gstAdded = false;
+            deleteHandleBtn.disabled = true;
+            updateBarcodeState();
+            // Disable barcode button initially
+        }
 
         function updateDeleteHandleState() {
             deleteHandleBtn.disabled = !(hsnAdded && gstAdded);
@@ -627,19 +356,20 @@ function resetFunctionStates() {
         }
 
         function getHSN(handle) {
-            if (!handle) return HSNDATA['outfits'];
+            if (!handle) return HSN_DATA['outfits'];
             const handleLower = String(handle).toLowerCase();
-            if (handleLower.includes('teether')) return HSNDATA['teether'];
-            if (handleLower.includes('doll') || handleLower.includes('toy')) return HSNDATA['doll'];
-            if (handleLower.includes('bow') || handleLower.includes('headband') || 
-                handleLower.includes('clip') || handleLower.includes('accessories')) {
-                return HSNDATA['accessories'];
-            }
-            return HSNDATA['outfits'];
+            if (handleLower.includes('teether')) return HSN_DATA['teether'];
+            if (handleLower.includes('doll') || handleLower.includes('toy')) return HSN_DATA['doll'];
+            if (handleLower.includes('bow') || handleLower.includes('headband') || handleLower.includes('clip') || handleLower.includes('accessories')) return HSN_DATA['accessories'];
+            return HSN_DATA['outfits'];
         }
 
         function getGST(price) {
-            try { return parseFloat(price) > 2500 ? 18 : 5; } catch { return 5; }
+            try {
+                return parseFloat(price) >= 2500 ? 18 : 5;
+            } catch {
+                return 5;
+            }
         }
 
         window.addBarcodeColumn = function() {
@@ -647,7 +377,7 @@ function resetFunctionStates() {
             const data = [...currentData];
             const hsnIdx = data[0].indexOf('HSN Code');
             if (hsnIdx === -1) {
-                updateOutput('❌ HSN Code column not found');
+                updateOutput('HSN Code column not found!');
                 return;
             }
             data[0].splice(hsnIdx, 0, 'Bar Code');
@@ -655,7 +385,7 @@ function resetFunctionStates() {
                 data[i].splice(hsnIdx, 0, '');
             }
             currentData = data;
-            updateOutput('✅ Bar Code column added before HSN Code');
+            updateOutput('Bar Code column added before HSN Code');
             updatePreviewTable();
         };
 
@@ -671,11 +401,48 @@ function resetFunctionStates() {
         }
 
         window.addTitleFill = function() {
-            if (!currentData) return;
-            currentData = forwardFillTitle([...currentData]);
-            updateOutput('✅ Title forward filled');
-            updatePreviewTable();
-        };
+    if (!currentData) return;
+    
+    const data = [...currentData];
+    const titleIdx = data[0].indexOf('Title');
+    const option1Idx = data[0].indexOf('Option1 Value');
+    
+    if (titleIdx === -1) {
+        updateOutput('Title column not found!');
+        return;
+    }
+    
+    if (option1Idx === -1) {
+        updateOutput('Option1 Value column not found!');
+        return;
+    }
+    
+    // Step 1: Forward fill titles first
+    let lastTitle = '';
+    for (let i = 1; i < data.length; i++) {
+        if (data[i][titleIdx]) {
+            lastTitle = data[i][titleIdx];
+        } else {
+            data[i][titleIdx] = lastTitle;
+        }
+    }
+    
+    // Step 2: Remove rows where Option1 Value is empty/null/undefined
+    const filteredData = [data[0]];  // Keep header row
+    
+    for (let i = 1; i < data.length; i++) {
+        const option1Value = data[i][option1Idx];
+        // Check if empty, null, undefined, or just whitespace
+        if (option1Value && String(option1Value).trim() !== '') {
+            filteredData.push(data[i]);
+        }
+    }
+    
+    currentData = filteredData;
+    updateOutput(`✅ Title forward filled + ${data.length - filteredData.length} empty Option1 rows removed. New total: ${filteredData.length} rows`);
+    updatePreviewTable();
+};
+
 
         window.addHSN = function() {
             if (!currentData) return;
@@ -686,13 +453,13 @@ function resetFunctionStates() {
                 for (let i = 1; i < data.length; i++) {
                     data[i].splice(handleIdx + 1, 0, getHSN(data[i][handleIdx]));
                 }
-                currentData = data;
-                hsnAdded = true;
-                updateDeleteHandleState();
-                updateBarcodeState();
-                updateOutput('✅ HSN Codes added');
-                updatePreviewTable();
             }
+            currentData = data;
+            hsnAdded = true;
+            updateDeleteHandleState();
+            updateBarcodeState();
+            updateOutput('HSN Codes added');
+            updatePreviewTable();
         };
 
         window.addGST = function() {
@@ -704,25 +471,27 @@ function resetFunctionStates() {
                 for (let i = 1; i < data.length; i++) {
                     data[i].push(getGST(data[i][priceIdx]));
                 }
-                currentData = data;
-                gstAdded = true;
-                updateDeleteHandleState();
-                updateOutput('✅ GST Rates added');
-                updatePreviewTable();
             }
+            currentData = data;
+            gstAdded = true;
+            updateDeleteHandleState();
+            updateOutput('GST Rates added');
+            updatePreviewTable();
         };
 
         window.deleteHandle = function() {
-            if (!currentData || !(hsnAdded && gstAdded)) return;
+            if (!currentData || !hsnAdded || !gstAdded) return;
             const data = [...currentData];
             const handleIdx = data[0].indexOf('Handle');
             if (handleIdx !== -1) {
                 data[0].splice(handleIdx, 1);
-                for (let i = 1; i < data.length; i++) data[i].splice(handleIdx, 1);
-                currentData = data;
-                updateOutput('✅ Handle deleted');
-                updatePreviewTable();
+                for (let i = 1; i < data.length; i++) {
+                    data[i].splice(handleIdx, 1);
+                }
             }
+            currentData = data;
+            updateOutput('Handle deleted');
+            updatePreviewTable();
         };
 
         window.addQuantity = function() {
@@ -731,11 +500,13 @@ function resetFunctionStates() {
             const opt1Idx = data[0].indexOf('Option1 Value');
             if (opt1Idx !== -1) {
                 data[0].splice(opt1Idx + 1, 0, 'Quantity');
-                for (let i = 1; i < data.length; i++) data[i].splice(opt1Idx + 1, 0, '');
-                currentData = data;
-                updateOutput('✅ Quantity column added');
-                updatePreviewTable();
+                for (let i = 1; i < data.length; i++) {
+                    data[i].splice(opt1Idx + 1, 0, '');
+                }
             }
+            currentData = data;
+            updateOutput('Quantity column added');
+            updatePreviewTable();
         };
 
         window.addSalesColumns = function() {
@@ -747,128 +518,196 @@ function resetFunctionStates() {
                 for (let i = 1; i < data.length; i++) {
                     data[i].splice(priceIdx + 1, 0, '', '', '');
                 }
-                currentData = data;
-                updateOutput('✅ Sales columns added');
-                updatePreviewTable();
             }
+            currentData = data;
+            updateOutput('Sales columns added');
+            updatePreviewTable();
         };
 
         window.reorderColumns = function() {
-    if (!currentData) return;
-    
-    // Include Bar Code in the order!
-    const finalOrder = ['Title','Bar Code','HSN Code','Variant SKU','Option1 Value','Quantity','Variant Price','Total Sale','Commission','Taxable Value','GST Rate'];
-    
-    const existing = finalOrder.filter(col => currentData[0].includes(col));
-    const colMap = {};
-    currentData[0].forEach((col, i) => colMap[col] = i);
-    const newData = [existing];
-    
-    for (let i = 1; i < currentData.length; i++) {
-        newData.push(existing.map(col => currentData[i][colMap[col]] || ''));
-    }
-    
-    currentData = newData;
-    updateOutput('✅ Columns reordered (Bar Code preserved)');
-    updatePreviewTable();
-};
-
+            if (!currentData) return;
+            // Include Bar Code in the order!
+            const finalOrder = ['Title', 'Bar Code', 'HSN Code', 'Variant SKU', 'Option1 Value', 'Quantity', 'Variant Price', 'Total Sale', 'Commission', 'Taxable Value', 'GST Rate'];
+            const existing = finalOrder.filter(col => currentData[0].includes(col));
+            const colMap = {};
+            currentData[0].forEach((col, i) => { colMap[col] = i; });
+            const newData = [existing];
+            for (let i = 1; i < currentData.length; i++) {
+                newData.push(existing.map(col => currentData[i][colMap[col]]));
+            }
+            currentData = newData;
+            updateOutput('Columns reordered (Bar Code preserved)');
+            updatePreviewTable();
+        };
 
         window.processCompleteFile = function() {
-            if (!currentData) return;
-            
-            let data = forwardFillTitle([...currentData]);
-            const requiredCols = ['Handle', 'Title', 'Variant SKU', 'Option1 Value', 'Variant Price'];
-            const colMap = {};
-            data[0].forEach((col, i) => colMap[col] = i);
-            
-            const availableCols = requiredCols.filter(col => colMap[col] !== undefined);
-            data = [availableCols];
-            for (let i = 1; i < currentData.length; i++) {
-                data.push(availableCols.map(col => currentData[i][colMap[col]]));
-            }
-            
-            const handleIdx = data[0].indexOf('Handle');
-            data[0].splice(handleIdx + 1, 0, 'HSN Code');
-            for (let i = 1; i < data.length; i++) {
-                data[i].splice(handleIdx + 1, 0, getHSN(data[i][handleIdx]));
-            }
-            
-            const priceIdx = data[0].indexOf('Variant Price');
-            data[0].push('GST Rate');
-            for (let i = 1; i < data.length; i++) {
-                data[i].push(getGST(data[i][priceIdx]));
-            }
-            
-            data[0].splice(handleIdx, 1);
-            for (let i = 1; i < data.length; i++) data[i].splice(handleIdx, 1);
-            
-            const opt1Idx = data[0].indexOf('Option1 Value');
-            data[0].splice(opt1Idx + 1, 0, 'Quantity');
-            for (let i = 1; i < data.length; i++) data[i].splice(opt1Idx + 1, 0, '');
-            
-            const newPriceIdx = data[0].indexOf('Variant Price');
-            data[0].splice(newPriceIdx + 1, 0, 'Total Sale', 'Commission', 'Taxable Value');
-            for (let i = 1; i < data.length; i++) {
-                data[i].splice(newPriceIdx + 1, 0, '', '', '');
-            }
-            
-            const finalOrder = ['Title','HSN Code','Variant SKU','Option1 Value','Quantity','Variant Price','Total Sale','Commission','Taxable Value','GST Rate'];
-            const existing = finalOrder.filter(col => data[0].includes(col));
-            const finalData = [existing];
-            const finalMap = {};
-            data[0].forEach((col, i) => finalMap[col] = i);
-            
-            for (let i = 1; i < data.length; i++) {
-                finalData.push(existing.map(col => data[i][finalMap[col]] || ''));
-            }
-            
-            processedData = finalData;
-            const outputName = currentFileName.replace(/\.(csv|xlsx?)$/, '_processed.xlsx');
-            
-            const wb = XLSX.utils.book_new();
-const ws = XLSX.utils.aoa_to_sheet(finalData);
+    if (!currentData) return;
+    
+    let data = forwardFillTitle([...currentData]);
+    const requiredCols = ['Handle', 'Title', 'Variant SKU', 'Option1 Value', 'Variant Price'];
+    const colMap = {};
+    data[0].forEach((col, i) => { colMap[col] = i; });
+    const availableCols = requiredCols.filter(col => colMap[col] !== undefined);
+    
+    data = [availableCols];
+    for (let i = 1; i < currentData.length; i++) {
+        data.push(availableCols.map(col => currentData[i][colMap[col]]));
+    }
 
-// --- Column width + spacing block ---
-const colWidths = [
-  50, // Title
-  15, // HSN Code
-  20, // Variant SKU
-  20, // Option1 Value
-  12, // Quantity
-  12, // Variant Price
-  15, // Total Sale
-  15, // Commission
-  18, // Taxable Value
-  10  // GST Rate
-];
+    // Add HSN Code (always)
+    const handleIdx = data[0].indexOf('Handle');
+    data[0].splice(handleIdx + 1, 0, 'HSN Code');
+    for (let i = 1; i < data.length; i++) {
+        data[i].splice(handleIdx + 1, 0, getHSN(data[i][handleIdx]));
+    }
 
-ws['!cols'] = colWidths.map(w => ({ wch: w }));
+    // Add Bar Code BEFORE HSN if it exists in preview data, otherwise add empty
+    const hsnIdx = data[0].indexOf('HSN Code');
+    const hasBarCodeInPreview = currentData[0].includes('Bar Code');
+    data[0].splice(hsnIdx, 0, 'Bar Code');
+    for (let i = 1; i < data.length; i++) {
+        const previewBarCodeIdx = currentData[0].indexOf('Bar Code');
+        data[i].splice(hsnIdx, 0, hasBarCodeInPreview && previewBarCodeIdx !== -1 ? currentData[i][previewBarCodeIdx] || '' : '');
+    }
 
+    // Add GST Rate (always)
+    const priceIdx = data[0].indexOf('Variant Price');
+    data[0].push('GST Rate');
+    for (let i = 1; i < data.length; i++) {
+        data[i].push(getGST(data[i][priceIdx]));
+    }
+
+    // Delete Handle
+    data[0].splice(handleIdx, 1);  // Note: handleIdx is now invalid after Bar Code insert, but we already used it
+    for (let i = 1; i < data.length; i++) {
+        data[i].splice(handleIdx, 1);
+    }
+
+    // Add Quantity
+    const opt1Idx = data[0].indexOf('Option1 Value');
+    data[0].splice(opt1Idx + 1, 0, 'Quantity');
+    for (let i = 1; i < data.length; i++) {
+        data[i].splice(opt1Idx + 1, 0, '');
+    }
+
+    // Add Sales columns
+    const newPriceIdx = data[0].indexOf('Variant Price');
+    data[0].splice(newPriceIdx + 1, 0, 'Total Sale', 'Commission', 'Taxable Value');
+    for (let i = 1; i < data.length; i++) {
+        data[i].splice(newPriceIdx + 1, 0, '', '', '');
+    }
+
+    // FIXED: Include Bar Code in final order + match column widths exactly
+    const finalOrder = ['Title', 'Bar Code', 'HSN Code', 'Variant SKU', 'Option1 Value', 'Quantity', 'Variant Price', 'Total Sale', 'Commission', 'Taxable Value', 'GST Rate'];
+    const existing = finalOrder.filter(col => data[0].includes(col));
+    const finalData = [existing];
+    const finalMap = {};
+    data[0].forEach((col, i) => { finalMap[col] = i; });
+    for (let i = 1; i < data.length; i++) {
+        finalData.push(existing.map(col => data[i][finalMap[col]] || ''));
+    }
+
+    processedData = finalData;
+    const outputName = currentFileName.replace(/\.xlsx?$/, '') + '_processed.xlsx';
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(finalData);
+
+    // FIXED: Exact column widths matching finalOrder (11 columns now)
+    const colWidths = [
+        {wch: 40},  // Title
+        {wch: 25},  // Bar Code  
+        {wch: 15},  // HSN Code
+        {wch: 20},  // Variant SKU
+        {wch: 18},  // Option1 Value
+        {wch: 12},  // Quantity
+        {wch: 14},  // Variant Price
+        {wch: 14},  // Total Sale
+        {wch: 14},  // Commission
+        {wch: 16},  // Taxable Value
+        {wch: 12}   // GST Rate
+    ];
+    ws['!cols'] = colWidths;
+
+    // Apply consistent cell formatting
+    // Apply CENTER alignment to ALL cells
 const range = XLSX.utils.decode_range(ws['!ref']);
 for (let R = range.s.r; R <= range.e.r; ++R) {
-  for (let C = range.s.c; C <= range.e.c; ++C) {
-    const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-    const cell = ws[cellAddress];
-    if (!cell) continue;
-    cell.s = {
-      alignment: {
-        vertical: 'center',
-        horizontal: C === 0 ? 'left' : 'center',
-        wrapText: true
-      }
-    };
-  }
-}
-// --- end block ---
-
-XLSX.utils.book_append_sheet(wb, ws, 'Data');
-XLSX.writeFile(wb, outputName);
-
-            
-            updateOutput(`✅ SAVED ${outputName}\n📋 Final columns set`);
-            document.getElementById('downloadBtn').style.display = 'block';
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({r: R, c: C});
+        const cell = ws[cellAddress];
+        if (!cell) continue;
+        cell.s = {
+            alignment: {
+                vertical: 'center',
+                horizontal: 'center',  // ALL CENTERED ✅
+                wrapText: true         // Enable text wrap for all (prevents overflow)
+            },
+            font: { 
+                name: 'Calibri', 
+                size: 11,
+                bold: R === 0         // Bold only header row
+            }
         };
+    }
+}
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Data');
+    XLSX.writeFile(wb, outputName);
+    updateOutput(`✅ SAVED: ${outputName} - All columns preserved with proper spacing`);
+    document.getElementById('downloadBtn').style.display = 'block';
+updateOutput(`✅ PROCESSED: ${outputName} - Click Download Result to save`);
+};
+
+window.downloadProcessedFile = function() {
+    if (!processedData || processedData.length === 0) {
+        updateOutput('No processed data available! Run Process File first.');
+        return;
+    }
+    
+    const outputName = currentFileName.replace(/\.xlsx?$/, '') + '_processed.xlsx';
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(processedData);
+
+    // Use SAME column widths & formatting as processCompleteFile
+    const colWidths = [
+        {wch: 40}, {wch: 25}, {wch: 15}, {wch: 20}, {wch: 18}, 
+        {wch: 12}, {wch: 14}, {wch: 14}, {wch: 14}, {wch: 16}, {wch: 12}
+    ];
+    ws['!cols'] = colWidths;
+
+    // Same center alignment formatting
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const cellAddress = XLSX.utils.encode_cell({r: R, c: C});
+            const cell = ws[cellAddress];
+            if (!cell) continue;
+            cell.s = {
+                alignment: {
+                    vertical: 'center',
+                    horizontal: 'center',
+                    wrapText: true
+                },
+                font: { 
+                    name: 'Calibri', 
+                    size: 11,
+                    bold: R === 0
+                }
+            };
+        }
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Data');
+    XLSX.writeFile(wb, outputName);
+    updateOutput(`✅ RE-DOWNLOADED: ${outputName}`);
+};
+
+        function s2ab(s) {
+            const buf = new ArrayBuffer(s.length);
+            const view = new Uint8Array(buf);
+            for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+            return buf;
+        }
 
         window.resetData = function() {
             currentData = null;
@@ -886,7 +725,5 @@ XLSX.writeFile(wb, outputName);
             uploadSection.classList.remove('dragover');
         };
     </script>
-    
 </body>
 </html>
-
